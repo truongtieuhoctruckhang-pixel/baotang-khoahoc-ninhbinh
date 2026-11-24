@@ -9,6 +9,7 @@ import { getAdminEditHashForRoute, getRouteKey, parseHashRoute, type ActiveRoute
 import { getCompletedCount, loadPassportProgress, recordStationQuizResult, resetPassportProgress, type PassportProgress } from './lib/storage';
 import { BottomNav } from './components/BottomNav';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { Footer } from './components/Footer';
 import { TopBar } from './components/TopBar';
 import { AboutPage } from './pages/AboutPage';
 import { HomePage } from './pages/HomePage';
@@ -43,6 +44,7 @@ export default function App() {
     hasFirestoreNews: false, firestorePermissionDenied: false, loading: true,
   });
   const [isAdminSignedIn, setIsAdminSignedIn] = useState(false);
+  const [isStationQuizActive, setIsStationQuizActive] = useState(false);
   const [route, setRoute] = useState<ActiveRoute>(() => parseHashRoute(typeof window !== 'undefined' ? window.location.hash : '#/', STATIONS));
   const [progress, setProgress] = useState<PassportProgress>(() => loadPassportProgress());
 
@@ -89,6 +91,7 @@ export default function App() {
   const completedCount = getCompletedCount(progress, cmsState.stations);
   const activeStation = route.view === 'station' ? cmsState.stations.find((s) => s.id === route.stationId) : undefined;
   const isAdminRoute = route.view === 'admin';
+  const showFooter = !isAdminRoute && !(route.view === 'station' && isStationQuizActive);
 
   return (
     <div className="passport-paper-bg flex min-h-screen flex-col text-[#17262B]">
@@ -96,7 +99,7 @@ export default function App() {
         <TopBar route={route} completedCount={completedCount} onNavigate={navigate} />
       )}
 
-      <main className={`flex-1 ${isAdminRoute ? '' : 'pb-16 md:pb-0'}`}>
+      <main className={`flex-1 ${!isAdminRoute && !showFooter ? 'pb-20 md:pb-0' : ''}`}>
         {!isAdminRoute && cmsState.loading ? (
           <ViewerLoadingSkeleton />
         ) : (
@@ -107,7 +110,7 @@ export default function App() {
               {route.view === 'news' && <NewsPage posts={cmsState.newsPosts} postId={route.postId} onNavigate={navigate} />}
               {route.view === 'passport' && <PassportPage progress={progress} stations={cmsState.stations} onNavigate={navigate} onResetPassport={handleResetPassport} />}
               {route.view === 'map' && <MapPage progress={progress} stations={cmsState.stations} clusters={cmsState.clusters} onNavigate={navigate} />}
-              {route.view === 'station' && activeStation && <StationPage station={activeStation} stations={cmsState.stations} clusters={cmsState.clusters} progress={progress} onNavigate={navigate} onCompleteQuiz={handleCompleteQuiz} />}
+              {route.view === 'station' && activeStation && <StationPage station={activeStation} stations={cmsState.stations} clusters={cmsState.clusters} progress={progress} onNavigate={navigate} onCompleteQuiz={handleCompleteQuiz} onQuizActiveChange={setIsStationQuizActive} />}
               {route.view === 'admin' && (
                 <ErrorBoundary>
                   <Suspense fallback={<div className="flex min-h-[75vh] items-center justify-center px-4"><div className="flex items-center gap-3 rounded-[16px] border border-[#E3DAC3] bg-[#FBF8F1] px-6 py-4 text-sm font-semibold text-[#17262B] shadow-[0_8px_24px_rgba(11,61,58,0.10)]"><Loader2 className="h-5 w-5 animate-spin text-[#137A6F]" /><span>Đang tải trang Quản trị...</span></div></div>}>
@@ -132,13 +135,12 @@ export default function App() {
         </button>
       )}
 
-      {!isAdminRoute && (
-        <footer className="border-t border-[#E3DAC3] bg-[#FBF8F1] px-4 py-6 pb-24 text-center text-xs text-[#4A5B60] md:pb-8">
-          <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 sm:flex-row">
-            <span className="font-serif font-semibold text-[#17262B]">{cmsState.projectInfo.tenDuAn} · {cmsState.projectInfo.tenPhu}</span>
-            <span>Dự án Giáo dục STEM Di Sản · Bảo tàng Khoa học Số</span>
-          </div>
-        </footer>
+      {showFooter && (
+        <Footer
+          teamName={cmsState.projectInfo.nhomThucHien.tenNhom}
+          isAdminSignedIn={isAdminSignedIn}
+          onNavigate={navigate}
+        />
       )}
 
       {!isAdminRoute && <BottomNav route={route} completedCount={completedCount} onNavigate={navigate} />}

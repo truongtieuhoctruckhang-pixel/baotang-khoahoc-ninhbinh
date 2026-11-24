@@ -34,6 +34,7 @@ interface StationPageProps {
   stations?: TramDiSan[];
   clusters?: CumTram[];
   previewMode?: boolean;
+  onQuizActiveChange?: (active: boolean) => void;
 }
 
 export function StationPage({
@@ -44,6 +45,7 @@ export function StationPage({
   stations = STATIONS,
   clusters = CLUSTERS,
   previewMode = false,
+  onQuizActiveChange,
 }: StationPageProps) {
   const [showQuiz, setShowQuiz] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -65,6 +67,13 @@ export function StationPage({
     setShowConfetti(false);
     setIsGrandFinale(false);
   }, [station.id]);
+
+  useEffect(() => {
+    onQuizActiveChange?.(showQuiz);
+    return () => {
+      onQuizActiveChange?.(false);
+    };
+  }, [showQuiz, onQuizActiveChange]);
 
   const handleOpenQuiz = () => {
     setShowQuiz(true);
