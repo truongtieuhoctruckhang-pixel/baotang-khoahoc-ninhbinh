@@ -1,0 +1,336 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Be Vietnam Pro", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-serif: "Playfair Display", Georgia, Cambria, "Times New Roman", Times, serif;
+
+  /* Bảng màu chính */
+  --color-primary-900: #0B3D3A;
+  --color-primary-600: #137A6F;
+  --color-primary-100: #DCEFEA;
+
+  --color-accent-700: #8A6414;
+  --color-accent-500: #C9962E;
+  --color-accent-400: #E2B857;
+  --color-accent-100: #F6EBCB;
+
+  --color-surface-50: #FBF8F1;
+  --color-surface-100: #F3EDDD;
+
+  --color-ink-900: #17262B;
+  --color-ink-600: #4A5B60;
+  --color-line: #E3DAC3;
+
+  /* Màu nhận diện 3 cụm */
+  --color-cluster-1: #137A6F;
+  --color-cluster-2: #B07A1C;
+  --color-cluster-3: #1F6F8B;
+
+  /* Màu trạng thái */
+  --color-status-correct: #2E8B57;
+  --color-status-correct-bg: #E4F4EA;
+  --color-status-wrong: #C2553A;
+  --color-status-wrong-bg: #FBE9E3;
+  --color-lock-border: #CBBF9F;
+  --color-lock-icon: #A99C7A;
+}
+
+:root {
+  --primary-900: #0B3D3A;
+  --primary-600: #137A6F;
+  --primary-100: #DCEFEA;
+  --accent-700: #8A6414;
+  --accent-500: #C9962E;
+  --accent-400: #E2B857;
+  --accent-100: #F6EBCB;
+  --surface-50: #FBF8F1;
+  --surface-100: #F3EDDD;
+  --ink-900: #17262B;
+  --ink-600: #4A5B60;
+  --line: #E3DAC3;
+  --shadow-heritage: 0 8px 24px rgba(11, 61, 58, 0.10);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: var(--font-sans);
+    background-color: var(--surface-50);
+    color: var(--ink-900);
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: var(--font-serif);
+    text-wrap: balance;
+  }
+}
+
+/* Nền giấy kem sang trọng với họa tiết lưới chìm tinh tế */
+.passport-paper-bg {
+  background-color: var(--surface-50);
+  background-image:
+    radial-gradient(circle at 20% 12%, rgba(201, 150, 46, 0.05) 0%, transparent 45%),
+    radial-gradient(circle at 82% 78%, rgba(19, 122, 111, 0.045) 0%, transparent 50%),
+    repeating-linear-gradient(
+      0deg,
+      rgba(11, 61, 58, 0.018) 0px,
+      rgba(11, 61, 58, 0.018) 1px,
+      transparent 1px,
+      transparent 30px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(11, 61, 58, 0.018) 0px,
+      rgba(11, 61, 58, 0.018) 1px,
+      transparent 1px,
+      transparent 30px
+    );
+}
+
+/* Họa tiết hoa văn di sản phủ mờ 6% cho khối Hero và Sổ sưu tầm */
+.heritage-pattern-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg width='64' height='64' viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23E2B857' stroke-width='1'%3E%3Ccircle cx='32' cy='32' r='22'/%3E%3Ccircle cx='32' cy='32' r='10'/%3E%3Cpath d='M32 0v64M0 32h64M9.4 9.4l45.2 45.2M54.6 9.4L9.4 54.6'/%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.06;
+}
+
+/* Khung thẻ hộ chiếu viền chỉ vàng đồng & đổ bóng xanh ngọc */
+.passport-frame {
+  border: 1px solid var(--line);
+  box-shadow:
+    inset 0 0 0 4px var(--surface-50),
+    inset 0 0 0 5px rgba(201, 150, 46, 0.22),
+    var(--shadow-heritage);
+}
+
+.heritage-shadow {
+  box-shadow: var(--shadow-heritage);
+}
+
+/* Ánh kim huy chương vàng đồng cho danh hiệu đã mở */
+.medal-gold-gradient {
+  background: linear-gradient(135deg, #E2B857 0%, #C9962E 52%, #A97C1E 100%);
+}
+
+/* Hiệu ứng đóng dấu nghiêng chân thật (-4° đến 4°) */
+@keyframes stampSlam {
+  0% {
+    opacity: 0;
+    transform: scale(2.05) rotate(-14deg);
+    filter: blur(2px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.93) rotate(-2.5deg);
+    filter: blur(0px);
+  }
+  80% {
+    transform: scale(1.03) rotate(-3.5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(-3deg);
+  }
+}
+
+.animate-stamp-slam {
+  animation: stampSlam 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-stamp-slam {
+    animation: none;
+    transform: rotate(-3deg);
+  }
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.pb-safe {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
+/* Nội dung bài viết CMS (Trang Giới thiệu, Tin tức & Trình soạn thảo) */
+.cms-prose {
+  color: var(--ink-900);
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+
+.cms-prose h1,
+.cms-prose h2 {
+  font-family: var(--font-serif);
+  color: var(--ink-900);
+  font-weight: 700;
+  font-size: 1.375rem;
+  line-height: 1.35;
+  margin-top: 1.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.cms-prose h2:first-child,
+.cms-prose h3:first-child,
+.cms-prose p:first-child {
+  margin-top: 0;
+}
+
+.cms-prose h3 {
+  font-family: var(--font-serif);
+  color: var(--primary-900);
+  font-weight: 700;
+  font-size: 1.125rem;
+  line-height: 1.4;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.cms-prose p {
+  color: var(--ink-600);
+  margin-bottom: 0.85rem;
+}
+
+.cms-prose strong,
+.cms-prose b {
+  color: var(--ink-900);
+  font-weight: 700;
+}
+
+.cms-prose ul {
+  list-style-type: disc;
+  padding-left: 1.35rem;
+  margin-bottom: 1rem;
+  color: var(--ink-600);
+}
+
+.cms-prose ol {
+  list-style-type: decimal;
+  padding-left: 1.35rem;
+  margin-bottom: 1rem;
+  color: var(--ink-600);
+}
+
+.cms-prose li {
+  margin-bottom: 0.35rem;
+}
+
+.cms-prose a {
+  color: var(--primary-600);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cms-prose a:hover {
+  color: var(--primary-900);
+}
+
+.cms-prose blockquote {
+  border-left: 4px solid var(--accent-500);
+  background-color: var(--surface-100);
+  padding: 0.75rem 1rem;
+  border-radius: 0 12px 12px 0;
+  margin: 1rem 0;
+  font-style: italic;
+  color: var(--ink-900);
+}
+
+.cms-prose code {
+  background-color: var(--surface-100);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.1rem 0.35rem;
+  font-size: 0.875em;
+  color: var(--primary-900);
+}
+
+.cms-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.15rem 0;
+  font-size: 0.9rem;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+}
+
+.cms-prose th,
+.cms-prose td {
+  border: 1px solid var(--line);
+  padding: 0.65rem 0.85rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.cms-prose th {
+  background-color: var(--surface-100);
+  color: var(--ink-900);
+  font-weight: 700;
+}
+
+.cms-prose td {
+  background-color: var(--surface-50);
+  color: var(--ink-600);
+}
+
+.cms-prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  margin: 0.9rem 0;
+}
+
+.cms-prose .cms-video-embed {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background-color: var(--primary-900);
+  margin: 1rem 0;
+}
+
+.cms-prose .cms-video-embed iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.cms-prose[contenteditable='true'][data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: rgba(74, 91, 96, 0.55);
+  pointer-events: none;
+}
+
+/* Công thức hóa học KaTeX + mhchem: cỡ chữ rõ trên điện thoại, tự cuộn ngang khi dài */
+.chem-inline-scroll {
+  display: inline-block;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  vertical-align: middle;
+  padding: 0.08rem 0.14rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.chem-inline-scroll .katex {
+  font-size: 1.08em;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .chem-inline-scroll .katex {
+    font-size: 1.06em;
+  }
+}
+
+

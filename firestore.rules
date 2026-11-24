@@ -1,0 +1,194 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Mặc định chặn mọi truy cập vào các collection khác
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Chỉ tài khoản quản trị (theo User UID trong Firebase Authentication) mới có quyền GHI
+    function isAdmin() {
+      return isSignedIn()
+        && request.auth.uid == "[DÁN USER UID]";
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function isValidKienThuc(k) {
+      return k is map
+        && k.keys().hasAll(['linhVuc', 'tomTat', 'diemNhan', 'phuongTrinh', 'giaiThichPhuongTrinh'])
+        && k.keys().hasOnly(['linhVuc', 'tomTat', 'diemNhan', 'phuongTrinh', 'giaiThichPhuongTrinh'])
+        && k.linhVuc is string && k.linhVuc.size() <= 160
+        && k.tomTat is string && k.tomTat.size() <= 3000
+        && k.diemNhan is list && k.diemNhan.size() <= 12
+        && (k.diemNhan.size() == 0 || k.diemNhan[0] is string)
+        && k.phuongTrinh is string && k.phuongTrinh.size() <= 400
+        && k.giaiThichPhuongTrinh is string && k.giaiThichPhuongTrinh.size() <= 800;
+    }
+
+    function isValidVideo(v) {
+      return v is map
+        && v.keys().hasAll(['youtubeId', 'tieuDe', 'thoiLuong'])
+        && v.keys().hasOnly(['youtubeId', 'tieuDe', 'thoiLuong'])
+        && v.youtubeId is string && v.youtubeId.size() <= 32
+        && v.tieuDe is string && v.tieuDe.size() <= 200
+        && v.thoiLuong is string && v.thoiLuong.size() <= 32;
+    }
+
+    function isValidCauHoiItem(q) {
+      return q is map
+        && q.keys().hasAll(['cauHoi', 'dapAn', 'dapAnDung', 'giaiThich'])
+        && q.keys().hasOnly(['cauHoi', 'dapAn', 'dapAnDung', 'giaiThich'])
+        && q.cauHoi is string && q.cauHoi.size() >= 1 && q.cauHoi.size() <= 500
+        && q.dapAn is list && q.dapAn.size() == 4
+        && q.dapAn[0] is string && q.dapAn[1] is string && q.dapAn[2] is string && q.dapAn[3] is string
+        && q.dapAnDung is int && q.dapAnDung >= 0 && q.dapAnDung <= 3
+        && q.giaiThich is string && q.giaiThich.size() <= 1000;
+    }
+
+    function isValidStation(data) {
+      return data is map
+        && data.keys().hasAll([
+          'id', 'soThuTu', 'cumId', 'cum', 'ten', 'diaPhuong',
+          'anh', 'moTaNgan', 'kienThuc', 'video', 'cauHoi', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'soThuTu', 'cumId', 'cum', 'ten', 'diaPhuong',
+          'anh', 'moTaNgan', 'kienThuc', 'video', 'autoplay', 'cauHoi', 'updatedAt'
+        ])
+        && (!('autoplay' in data) || data.autoplay is bool)
+        && data.id is string && data.id.size() >= 2 && data.id.size() <= 16 && data.id.matches('^[0-9]{2}$')
+        && data.soThuTu is int && data.soThuTu >= 1 && data.soThuTu <= 20
+        && data.cumId in ['cum-1', 'cum-2', 'cum-3']
+        && data.cum is string && data.cum.size() <= 160
+        && data.ten is string && data.ten.size() >= 1 && data.ten.size() <= 180
+        && data.diaPhuong is string && data.diaPhuong.size() <= 160
+        && data.anh is string && data.anh.size() <= 450000
+        && data.moTaNgan is string && data.moTaNgan.size() <= 600
+        && isValidKienThuc(data.kienThuc)
+        && isValidVideo(data.video)
+        && data.cauHoi is list && data.cauHoi.size() >= 1 && data.cauHoi.size() <= 20
+        && isValidCauHoiItem(data.cauHoi[0])
+        && data.updatedAt == request.time;
+    }
+
+    function isValidClusterItem(c) {
+      return c is map
+        && c.keys().hasAll(['id', 'soThuTu', 'ten', 'chuDe', 'moTa', 'mauDau'])
+        && c.keys().hasOnly(['id', 'soThuTu', 'ten', 'chuDe', 'moTa', 'mauDau'])
+        && c.id in ['cum-1', 'cum-2', 'cum-3']
+        && c.soThuTu is string && c.soThuTu.size() <= 40
+        && c.ten is string && c.ten.size() >= 1 && c.ten.size() <= 120
+        && c.chuDe is string && c.chuDe.size() <= 160
+        && c.moTa is string && c.moTa.size() <= 600
+        && c.mauDau is string && c.mauDau.size() <= 20;
+    }
+
+    function isValidNhomThucHien(n) {
+      return n is map
+        && n.keys().hasAll(['tenNhom', 'donVi', 'gioiThieu', 'thanhVien'])
+        && n.keys().hasOnly(['tenNhom', 'donVi', 'gioiThieu', 'thanhVien'])
+        && n.tenNhom is string && n.tenNhom.size() <= 200
+        && n.donVi is string && n.donVi.size() <= 200
+        && n.gioiThieu is string && n.gioiThieu.size() <= 1500
+        && n.thanhVien is list && n.thanhVien.size() <= 15
+        && (n.thanhVien.size() == 0 || n.thanhVien[0] is map);
+    }
+
+    function isValidSiteConfig(data) {
+      return data is map
+        && data.keys().hasAll([
+          'tenDuAn', 'tenPhu', 'khauHieu', 'anhBia', 'nhomThucHien', 'clusters', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'tenDuAn', 'tenPhu', 'khauHieu', 'anhBia', 'nhomThucHien', 'clusters', 'updatedAt'
+        ])
+        && data.tenDuAn is string && data.tenDuAn.size() >= 1 && data.tenDuAn.size() <= 180
+        && data.tenPhu is string && data.tenPhu.size() <= 200
+        && data.khauHieu is string && data.khauHieu.size() <= 500
+        && data.anhBia is string && data.anhBia.size() <= 450000
+        && isValidNhomThucHien(data.nhomThucHien)
+        && data.clusters is list && data.clusters.size() == 3
+        && isValidClusterItem(data.clusters[0])
+        && isValidClusterItem(data.clusters[1])
+        && isValidClusterItem(data.clusters[2])
+        && data.updatedAt == request.time;
+    }
+
+    function isValidAboutPage(data) {
+      return data is map
+        && data.keys().hasAll(['tieuDe', 'phuDe', 'anhBia', 'noiDungHtml', 'status', 'updatedAt'])
+        && data.keys().hasOnly(['tieuDe', 'phuDe', 'anhBia', 'noiDungHtml', 'status', 'updatedAt'])
+        && data.tieuDe is string && data.tieuDe.size() >= 1 && data.tieuDe.size() <= 200
+        && data.phuDe is string && data.phuDe.size() <= 300
+        && data.anhBia is string && data.anhBia.size() <= 450000
+        && data.noiDungHtml is string && data.noiDungHtml.size() <= 450000
+        && data.status in ['draft', 'published']
+        && data.updatedAt == request.time;
+    }
+
+    function isValidNewsPost(data, newsId) {
+      return data is map
+        && data.keys().hasAll([
+          'id', 'tieuDe', 'tomTat', 'danhMuc', 'tacGia',
+          'ngayDang', 'anhBia', 'noiDungHtml', 'status', 'visible', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'tieuDe', 'tomTat', 'danhMuc', 'tacGia',
+          'ngayDang', 'anhBia', 'noiDungHtml', 'status', 'visible', 'updatedAt'
+        ])
+        && data.id == newsId
+        && data.tieuDe is string && data.tieuDe.size() >= 1 && data.tieuDe.size() <= 220
+        && data.tomTat is string && data.tomTat.size() <= 600
+        && data.danhMuc is string && data.danhMuc.size() <= 80
+        && data.tacGia is string && data.tacGia.size() <= 120
+        && data.ngayDang is string && data.ngayDang.size() <= 40
+        && data.anhBia is string && data.anhBia.size() <= 450000
+        && data.noiDungHtml is string && data.noiDungHtml.size() <= 450000
+        && data.status in ['draft', 'published']
+        && data.visible is bool
+        && data.updatedAt == request.time;
+    }
+
+    // 12 trạm di sản: stations/01 ... stations/12
+    match /stations/{stationId} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && isValidId(stationId)
+        && isValidStation(incoming())
+        && incoming().id == stationId;
+      allow delete: if isAdmin() && isValidId(stationId);
+    }
+
+    // Cấu hình trang chủ (settings/home) & trang Giới thiệu (settings/about)
+    match /settings/{docId} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && isValidId(docId)
+        && (
+          (docId == 'home' && isValidSiteConfig(incoming())) ||
+          (docId == 'about' && isValidAboutPage(incoming()))
+        );
+      allow delete: if isAdmin() && isValidId(docId) && docId in ['home', 'about'];
+    }
+
+    // Bài viết Tin tức: news/{newsId}
+    match /news/{newsId} {
+      allow read: if true;
+      allow create, update: if isAdmin()
+        && isValidId(newsId)
+        && isValidNewsPost(incoming(), newsId);
+      allow delete: if isAdmin() && isValidId(newsId);
+    }
+  }
+}
