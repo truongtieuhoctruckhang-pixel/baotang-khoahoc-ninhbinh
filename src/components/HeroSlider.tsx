@@ -10,7 +10,7 @@ interface HeroSliderProps {
 export function HeroSlider({ slides, children }: HeroSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isDesktop, setIsDesktop] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const timerRef = useRef<number | null>(null);
 
@@ -53,59 +53,51 @@ export function HeroSlider({ slides, children }: HeroSliderProps) {
   // Visibility change handling (pause when tab hidden)
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.hidden) {
-        setIsPaused(true);
-      } else {
-        setIsPaused(false);
-      }
+      setIsHidden(document.hidden);
     };
+    setIsHidden(document.hidden);
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
-  // Auto-advance timer (6 seconds per slide on desktop if hasMultiple and not paused)
-  useEffect(() => {
-    if (!isDesktop || !hasMultiple || isPaused || reducedMotion) {
-      if (timerRef.current) {
-        window.clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-      return;
+  // Reset/start timer helper function
+  const resetTimer = () => {
+    if (timerRef.current) {
+      window.clearInterval(timerRef.current);
+      timerRef.current = null;
     }
+    if (!isDesktop || !hasMultiple || isHidden) return;
 
     timerRef.current = window.setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % activeSlides.length);
     }, 6000);
+  };
 
+  // Auto-advance timer setup & cleanup
+  useEffect(() => {
+    resetTimer();
     return () => {
       if (timerRef.current) {
         window.clearInterval(timerRef.current);
         timerRef.current = null;
       }
     };
-  }, [isDesktop, hasMultiple, isPaused, reducedMotion, activeSlides.length]);
+  }, [isDesktop, hasMultiple, isHidden, activeSlides.length]);
 
   const handlePrev = (e: React.MouseEvent) => {
     e.stopPropagation();
     setCurrentIndex((prev) => (prev - 1 + activeSlides.length) % activeSlides.length);
+    resetTimer();
   };
 
   const handleNext = (e: React.MouseEvent) => {
     e.stopPropagation();
     setCurrentIndex((prev) => (prev + 1) % activeSlides.length);
-  };
-
-  const handleDotClick = (idx: number, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCurrentIndex(idx);
+    resetTimer();
   };
 
   return (
-    <section
-      className="group relative overflow-hidden bg-gradient-to-br from-[#0B3D3A] to-[#115E56] text-[#FBF8F1]"
-      onMouseEnter={() => isDesktop && setIsPaused(true)}
-      onMouseLeave={() => isDesktop && setIsPaused(false)}
-    >
+    <section className="group relative overflow-hidden bg-gradient-to-br from-[#0B3D3A] to-[#115E56] text-[#FBF8F1]">
       <div className="relative min-h-[430px] sm:min-h-[500px] lg:min-h-[540px]">
         {/* Background Images / Slider */}
         {isDesktop && hasMultiple ? (
@@ -117,7 +109,7 @@ export function HeroSlider({ slides, children }: HeroSliderProps) {
                 className={`absolute inset-0 transition-opacity ease-in-out ${
                   isActive ? 'opacity-55 z-10' : 'opacity-0 z-0 pointer-events-none'
                 }`}
-                style={{ transitionDuration: reducedMotion ? '300ms' : '1200ms' }}
+                style={{ transitionDuration: '1200ms' }}
               >
                 <img
                   src={slide.url}
@@ -157,19 +149,6 @@ export function HeroSlider({ slides, children }: HeroSliderProps) {
           {children}
         </div>
 
-        {/* Slide Label at Bottom-Left (Desktop only when multiple slides) */}
-        {isDesktop && hasMultiple && (
-          <div className="absolute bottom-4 left-6 z-30 hidden sm:block">
-            <div
-              key={currentIndex}
-              className="animate-label-slide inline-flex items-center gap-2 rounded-full border border-[#E2B857]/40 bg-[#0B3D3A]/75 px-3 py-1 text-xs font-medium text-[#FBF8F1] backdrop-blur-md shadow-sm"
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-[#E2B857]" />
-              <span>{activeSlides[currentIndex]?.nhan}</span>
-            </div>
-          </div>
-        )}
-
         {/* Desktop Controls: Left/Right Arrows on Hover */}
         {isDesktop && hasMultiple && (
           <>
@@ -190,25 +169,6 @@ export function HeroSlider({ slides, children }: HeroSliderProps) {
               <ChevronRight className="h-6 w-6 text-[#E2B857]" />
             </button>
           </>
-        )}
-
-        {/* Desktop Controls: Dots at Bottom Center */}
-        {isDesktop && hasMultiple && (
-          <div className="absolute bottom-4 left-1/2 z-30 -translate-x-1/2 flex items-center gap-2">
-            {activeSlides.map((_, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={(e) => handleDotClick(idx, e)}
-                className={`h-2.5 rounded-full transition-all duration-300 ${
-                  idx === currentIndex
-                    ? 'w-8 bg-[#E2B857]'
-                    : 'w-2.5 bg-[#FBF8F1]/40 hover:bg-[#FBF8F1]/70'
-                }`}
-                aria-label={`Chuyển đến ảnh ${idx + 1}`}
-              />
-            ))}
-          </div>
         )}
       </div>
     </section>
