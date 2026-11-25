@@ -333,4 +333,22 @@
   }
 }
 
+@keyframes heroZoom {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.08); }
+}
+
+@keyframes labelSlideUp {
+  0% { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-hero-zoom {
+  animation: heroZoom 6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-label-slide {
+  animation: labelSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 

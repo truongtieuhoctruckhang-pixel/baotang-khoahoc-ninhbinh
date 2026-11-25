@@ -174,12 +174,19 @@ export function normalizeProjectInfo(raw: Partial<ProjectInfo> | undefined): Pro
     : PROJECT_INFO.nhomThucHien.thanhVien.map((m) => ({ ...m }));
 
   const rawCover = String(raw?.anhBia ?? PROJECT_INFO.anhBia);
+  const heroSlides = Array.isArray(raw?.heroSlides) && raw.heroSlides.length > 0
+    ? raw.heroSlides.slice(0, 5).map((s: any) => ({
+        url: sanitizePlainUrl(String(s?.url ?? '')).slice(0, 450000) || PROJECT_INFO.heroSlides[0].url,
+        nhan: String(s?.nhan ?? '').slice(0, 160) || 'Di sản Việt Nam',
+      }))
+    : PROJECT_INFO.heroSlides.map((s) => ({ ...s }));
 
   return {
     tenDuAn: String(raw?.tenDuAn ?? PROJECT_INFO.tenDuAn).slice(0, 180) || PROJECT_INFO.tenDuAn,
     tenPhu: String(raw?.tenPhu ?? PROJECT_INFO.tenPhu).slice(0, 200),
     khauHieu: String(raw?.khauHieu ?? PROJECT_INFO.khauHieu).slice(0, 500),
     anhBia: sanitizePlainUrl(rawCover).slice(0, 450000) || PROJECT_INFO.anhBia,
+    heroSlides,
     nhomThucHien: {
       tenNhom: String(nhom?.tenNhom ?? PROJECT_INFO.nhomThucHien.tenNhom).slice(0, 200),
       donVi: String(nhom?.donVi ?? PROJECT_INFO.nhomThucHien.donVi).slice(0, 200),
@@ -285,6 +292,7 @@ export function toSiteConfigPayload(projectInfo: ProjectInfo, clusters: CumTram[
     tenPhu: cleanProject.tenPhu,
     khauHieu: cleanProject.khauHieu,
     anhBia: cleanProject.anhBia,
+    heroSlides: cleanProject.heroSlides.map((s) => ({ url: s.url, nhan: s.nhan })),
     nhomThucHien: {
       tenNhom: cleanProject.nhomThucHien.tenNhom,
       donVi: cleanProject.nhomThucHien.donVi,

@@ -16,6 +16,7 @@ import {
   type PassportProgress,
 } from '../lib/storage';
 import { JourneyMapSvg } from '../components/JourneyMapSvg';
+import { HeroSlider } from '../components/HeroSlider';
 import { StationCard } from '../components/StationCard';
 import { StationImage } from '../components/StationImage';
 
@@ -46,60 +47,41 @@ export function HomePage({
 
   return (
     <div className="space-y-12 pb-12 sm:space-y-16">
-      {/* 1. Full-width Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#0B3D3A] to-[#115E56] text-[#FBF8F1]">
-        <div className="relative min-h-[430px] sm:min-h-[500px] lg:min-h-[540px]">
-          <StationImage
-            src={projectInfo.anhBia}
-            alt="Di sản Tràng An – Hộ chiếu Du lịch Khoa học 4.0"
-            loading="eager"
-            className="absolute inset-0 h-full w-full object-cover opacity-55 mix-blend-luminosity"
-          />
-          <div
-            className="absolute inset-0 bg-gradient-to-t from-[#0B3D3A] via-[#0B3D3A]/80 to-[#115E56]/60"
-            aria-hidden="true"
-          />
-          <div
-            className="heritage-pattern-overlay pointer-events-none absolute inset-0"
-            aria-hidden="true"
-          />
+      {/* 1. Full-width Hero Slider */}
+      <HeroSlider slides={projectInfo.heroSlides?.length ? projectInfo.heroSlides : [{ url: projectInfo.anhBia, nhan: projectInfo.tenPhu }]}>
+        <div className="max-w-2xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#E2B857] sm:text-sm">
+            {projectInfo.tenPhu}
+          </p>
+          <h1 className="mt-2.5 font-serif text-3xl font-bold leading-[1.15] tracking-tight text-[#FBF8F1] sm:text-4xl lg:text-5xl">
+            {projectInfo.tenDuAn}
+          </h1>
+          <p className="mt-4 max-w-xl text-sm leading-relaxed text-[#FBF8F1]/90 sm:text-base">
+            {projectInfo.khauHieu}
+          </p>
 
-          <div className="relative z-10 mx-auto flex min-h-[430px] max-w-6xl flex-col justify-end px-4 py-10 sm:min-h-[500px] sm:px-6 sm:py-14 lg:min-h-[540px]">
-            <div className="max-w-2xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#E2B857] sm:text-sm">
-                {projectInfo.tenPhu}
-              </p>
-              <h1 className="mt-2.5 font-serif text-3xl font-bold leading-[1.15] tracking-tight text-[#FBF8F1] sm:text-4xl lg:text-5xl">
-                {projectInfo.tenDuAn}
-              </h1>
-              <p className="mt-4 max-w-xl text-sm leading-relaxed text-[#FBF8F1]/90 sm:text-base">
-                {projectInfo.khauHieu}
-              </p>
+          <div className="mt-7 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={handleStartJourney}
+              className="inline-flex min-h-[48px] items-center gap-2 rounded-[12px] bg-[#C9962E] px-6 py-3 text-sm font-bold text-[#0B3D3A] shadow-[0_8px_24px_rgba(11,61,58,0.18)] transition-all duration-150 hover:bg-[#E2B857] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E2B857]"
+            >
+              <Compass className="h-4 w-4" />
+              <span>Bắt đầu hành trình</span>
+              <ArrowRight className="h-4 w-4" />
+            </button>
 
-              <div className="mt-7 flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleStartJourney}
-                  className="inline-flex min-h-[48px] items-center gap-2 rounded-[12px] bg-[#C9962E] px-6 py-3 text-sm font-bold text-[#0B3D3A] shadow-[0_8px_24px_rgba(11,61,58,0.18)] transition-all duration-150 hover:bg-[#E2B857] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E2B857]"
-                >
-                  <Compass className="h-4 w-4" />
-                  <span>Bắt đầu hành trình</span>
-                  <ArrowRight className="h-4 w-4" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => onNavigate('#/ho-chieu')}
-                  className="inline-flex min-h-[48px] items-center gap-2 rounded-[12px] border-[1.5px] border-[#E2B857]/75 bg-transparent px-5 py-3 text-sm font-semibold text-[#FBF8F1] backdrop-blur-sm transition-colors hover:bg-[#FBF8F1]/10 active:scale-[0.98]"
-                >
-                  <BookMarked className="h-4 w-4 text-[#E2B857]" />
-                  <span>Mở Hộ chiếu</span>
-                </button>
-              </div>
-            </div>
+            <button
+              type="button"
+              onClick={() => onNavigate('#/ho-chieu')}
+              className="inline-flex min-h-[48px] items-center gap-2 rounded-[12px] border-[1.5px] border-[#E2B857]/75 bg-transparent px-5 py-3 text-sm font-semibold text-[#FBF8F1] backdrop-blur-sm transition-colors hover:bg-[#FBF8F1]/10 active:scale-[0.98]"
+            >
+              <BookMarked className="h-4 w-4 text-[#E2B857]" />
+              <span>Mở Hộ chiếu</span>
+            </button>
           </div>
         </div>
-      </section>
+      </HeroSlider>
 
       {/* 2. Dynamic Passport Progress Card */}
       <section className="relative z-20 mx-auto -mt-14 max-w-6xl px-4 sm:-mt-16 sm:px-6">

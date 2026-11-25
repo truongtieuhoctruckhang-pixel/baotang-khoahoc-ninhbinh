@@ -1,7 +1,7 @@
 import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { AnimatePresence, motion } from 'motion/react';
-import { Loader2, Pencil } from 'lucide-react';
+import { Loader2, LogOut, Pencil } from 'lucide-react';
 import { CLUSTERS, DEFAULT_ABOUT_PAGE, DEFAULT_NEWS_POSTS, PROJECT_INFO, STATIONS } from './data';
 import { subscribeToCmsData, type SiteCmsState } from './lib/cmsService';
 import { ADMIN_EMAIL, auth } from './lib/firebase';
@@ -43,6 +43,7 @@ export default function App() {
     hasFirestoreStations: false, hasFirestoreSiteConfig: false, hasFirestoreAbout: false,
     hasFirestoreNews: false, firestorePermissionDenied: false, loading: true,
   });
+  const [authResolved, setAuthResolved] = useState(false);
   const [isAdminSignedIn, setIsAdminSignedIn] = useState(false);
   const [isStationQuizActive, setIsStationQuizActive] = useState(false);
   const [route, setRoute] = useState<ActiveRoute>(() => parseHashRoute(typeof window !== 'undefined' ? window.location.hash : '#/', STATIONS));
@@ -50,9 +51,17 @@ export default function App() {
 
   useEffect(() => subscribeToCmsData(setCmsState), []);
 
-  useEffect(() => onAuthStateChanged(auth, (user) => {
-    setIsAdminSignedIn(Boolean(user?.email) && user!.email!.toLowerCase() === ADMIN_EMAIL.toLowerCase());
-  }), []);
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (user) => {
+      setAuthResolved(true);
+      if (user?.email && user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+        setIsAdminSignedIn(true);
+      } else {
+        setIsAdminSignedIn(false);
+      }
+    });
+    return () => unsub();
+  }, []);
 
   useEffect(() => {
     const handleRouteChange = () => {
@@ -128,18 +137,35 @@ export default function App() {
         )}
       </main>
 
-      {isAdminSignedIn && !isAdminRoute && (
-        <button type="button" onClick={() => navigate(getAdminEditHashForRoute(route))} className="fixed bottom-20 right-4 z-40 inline-flex min-h-[42px] items-center gap-2 rounded-full border border-[#E2B857] bg-[#0B3D3A] px-4 py-2 text-xs font-bold text-[#FBF8F1] shadow-[0_8px_24px_rgba(11,61,58,0.28)] transition-all hover:bg-[#137A6F] active:scale-[0.97] md:bottom-6 md:right-6" title="Chỉnh sửa nội dung trang đang xem">
-          <Pencil className="h-3.5 w-3.5 text-[#E2B857]" />
-          <span>Sửa trang này</span>
-        </button>
+      {authResolved && isAdminSignedIn && !isAdminRoute && (
+        <div className="fixed bottom-20 right-4 z-40 flex items-center gap-2 md:bottom-6 md:right-6">
+          <button
+            type="button"
+            onClick={() => navigate(getAdminEditHashForRoute(route))}
+            className="inline-flex min-h-[42px] items-center gap-2 rounded-full border border-[#E2B857] bg-[#0B3D3A] px-4 py-2 text-xs font-bold text-[#FBF8F1] shadow-[0_8px_24px_rgba(11,61,58,0.28)] transition-all hover:bg-[#137A6F] active:scale-[0.97]"
+            title="Chỉnh sửa nội dung trang đang xem"
+          >
+            <Pencil className="h-3.5 w-3.5 text-[#E2B857]" />
+            <span>Sửa trang này</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => void signOut(auth)}
+            className="flex h-[42px] w-[42px] items-center justify-center rounded-full border border-[#E2B857]/60 bg-[#0B3D3A] text-[#FBF8F1] shadow-[0_8px_24px_rgba(11,61,58,0.28)] transition-all hover:bg-[#C2553A] active:scale-[0.97]"
+            title="Đăng xuất tài khoản quản trị (nút sửa sẽ ẩn ngay)"
+            aria-label="Đăng xuất quản trị"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+          </button>
+        </div>
       )}
 
       {showFooter && (
         <Footer
           teamName={cmsState.projectInfo.nhomThucHien.tenNhom}
-          isAdminSignedIn={isAdminSignedIn}
+          isAdminSignedIn={authResolved && isAdminSignedIn}
           onNavigate={navigate}
+          onSignOut={() => void signOut(auth)}
         />
       )}
 

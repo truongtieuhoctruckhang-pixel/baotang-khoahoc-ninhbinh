@@ -72,11 +72,17 @@ export interface TeamMember {
   vaiTro: string;
 }
 
+export interface HeroSlide {
+  url: string;
+  nhan: string;
+}
+
 export interface ProjectInfo {
   tenDuAn: string;
   tenPhu: string;
   khauHieu: string;
   anhBia: string;
+  heroSlides: HeroSlide[];
   nhomThucHien: {
     tenNhom: string;
     donVi: string;
@@ -91,6 +97,11 @@ export const PROJECT_INFO: ProjectInfo = {
   khauHieu:
     'Chạm mã QR tại mỗi miền di sản — giải mã quy luật tự nhiên, sưu tầm dấu ấn tri thức STEM Việt Nam.',
   anhBia: '/src/assets/images/hero_trangan_sunrise_1795513151468.jpg',
+  heroSlides: [
+    { url: '/src/assets/images/hero_trangan_sunrise_1795513151468.jpg', nhan: 'Tràng An – Ninh Bình' },
+    { url: '/src/assets/images/station_tamchuc_mountain_1795513152761.jpg', nhan: 'Tam Chúc – Hà Nam' },
+    { url: '/src/assets/images/station_cucphuong_forest_1795513153287.jpg', nhan: 'Cúc Phương – Ninh Bình' },
+  ],
   // TODO: kiểm tra lại — Cập nhật thông tin chính xác của nhóm thực hiện và trường học
   nhomThucHien: {
     tenNhom: 'Nhóm Nghiên Cứu STEM Di Sản & Tri Thức',
